@@ -23,8 +23,8 @@ int main() {
     {0,1,0, 0,0,0,0, 0,0,0,0, 0,FIN,  0,0,0,0}, // NOOP, wait for mem write
   };
 
-  //const char contents[] = {0x5,0x6,0x7,0x8,0x9, 0x0};
-  const char contents[] = {5,5,5,5,5,0x0};
+  // Initial memory contents
+  const char contents[] = {1,1,1,1,1,0};
   Memory mem = Memory(MEMORY_SIZE, contents, sizeof(contents));
   char* regstore = new char[REGISTER_FILE_SIZE];
   std::memset(regstore, 0, sizeof(char)*REGISTER_FILE_SIZE);
@@ -55,14 +55,11 @@ int main() {
   SME_MKBUS(s1_dst_reg);
   SME_MKBUS(s1_ex_cnt);
 
-  SME_MKBUS(s2_rd_mem_rdy);
   SME_MKBUS(s2_rd_mem_data);
   SME_MKBUS(s2_rd_mem_valid);
   SME_MKBUS(s2_rd_mem_reg);
-  SME_MKBUS(s2_rd_mem_adr);
 
   SME_MKDBUS(s2_wr_mem_adr, 2);
-  SME_MKBUS(s2_wr_mem_data);
   SME_MKBUS(s2_wr_mem_valid_1s); // 1 clock to dest
   SME_MKDBUS(s2_wr_mem_valid_2s, 2); // 2 clocks to dest
   SME_MKBUS(s2_wr_mem_reg);
@@ -72,36 +69,17 @@ int main() {
   SME_MKDBUS(s2_opcode, 2);
   SME_MKBUS(s2_ex_rdy);
   SME_MKDBUS(s2_dst_valid, 3);
-  //  DelayedBus s2_dst_valid(2);
   SME_MKDBUS(s2_dst_reg, 3);
-
-  SME_MKBUS(s3_rd_mem_valid);
-  SME_MKBUS(s3_rd_mem_data);
-  SME_MKBUS(s3_rd_mem_reg);
-
-  SME_MKBUS(s3_wr_mem_valid);
-  SME_MKBUS(s3_wr_mem_reg);
 
   SME_MKBUS(s3_ex_reg1);
   SME_MKBUS(s3_ex_reg2);
 
-  SME_MKBUS(s3_valid);
-  SME_MKBUS(s3_reg_in);
-  SME_MKBUS(s3_reg_data);
-
   SME_MKBUS(s3_wr_mem_data);
-
-  SME_MKBUS(s3_ex_data1);
-  SME_MKBUS(s3_ex_data2);
 
   SME_MKBUS(s4_mem_feedback);
   SME_MKBUS(s4_alu_result);
 
-  //SME_MKBUS(completed);
-  //SME_MKBUS(out_pc);
-  //SME_MKBUS();
-
-  auto r = Runner(42);
+  auto r = ThreadedRun(50,1);
   r.add_proc(new Instructions("instr",
                               {&rd_rdy,&wr_rdy,&s2_ex_rdy},
                               {&s1_wr_mem_valid,&s1_wr_mem_cnt,&s1_wr_mem_adr,&s1_wr_mem_reg,
@@ -142,7 +120,7 @@ int main() {
   r.add_proc(new ALU("alu",
                      {&s3_ex_reg1, &s3_ex_reg2, &s2_opcode},
                      {&s4_alu_result}));
-  r.start();
+  r.start<BQueue>();
 
   mem.dump(5);
 
