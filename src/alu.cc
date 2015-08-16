@@ -1,3 +1,4 @@
+#include <iostream>
 #include <libsme/sme.h>
 
 #include "alu.h"
@@ -25,4 +26,5 @@ void ALU::step() {
   case NOP:
     break;
   }
+  //std::cout << "ALU incoming values " << op1->read() << " " << op2->read() << " " << opcode->read() << std::endl;
 }

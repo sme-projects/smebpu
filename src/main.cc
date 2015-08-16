@@ -1,3 +1,5 @@
+#include <cstring>
+
 #include <libsme/sme.h>
 
 #include "constants.h"
@@ -21,9 +23,11 @@ int main() {
     {0,1,0, 0,0,0,0, 0,0,0,0, 0,FIN,  0,0,0,0}, // NOOP, wait for mem write
   };
 
-  Memory mem = Memory(MEMORY_SIZE);
+  //const char contents[] = {0x5,0x6,0x7,0x8,0x9, 0x0};
+  const char contents[] = {5,5,5,5,5,0x0};
+  Memory mem = Memory(MEMORY_SIZE, contents, sizeof(contents));
   char* regstore = new char[REGISTER_FILE_SIZE];
-  
+  std::memset(regstore, 0, sizeof(char)*REGISTER_FILE_SIZE);
 
   Bus op1 = Bus();
   Bus op2 = Bus();
@@ -57,7 +61,7 @@ int main() {
   SME_MKBUS(s2_rd_mem_reg);
   SME_MKBUS(s2_rd_mem_adr);
 
-  SME_MKBUS(s2_wr_mem_adr);
+  SME_MKDBUS(s2_wr_mem_adr, 2);
   SME_MKBUS(s2_wr_mem_data);
   SME_MKBUS(s2_wr_mem_valid_1s); // 1 clock to dest
   SME_MKDBUS(s2_wr_mem_valid_2s, 2); // 2 clocks to dest
@@ -97,10 +101,9 @@ int main() {
   //SME_MKBUS(out_pc);
   //SME_MKBUS();
 
-
-  auto r = Runner(99);
+  auto r = Runner(42);
   r.add_proc(new Instructions("instr",
-                              {&rd_rdy,&wr_rdy,&ex_rdy},
+                              {&rd_rdy,&wr_rdy,&s2_ex_rdy},
                               {&s1_wr_mem_valid,&s1_wr_mem_cnt,&s1_wr_mem_adr,&s1_wr_mem_reg,
                                   &s1_rd_mem_valid,&s1_rd_mem_cnt,&s1_rd_mem_adr,&s1_rd_mem_reg,
                                   &s1_ex_valid,&s1_opcode,&s1_src_reg1,&s1_src_reg2,
@@ -109,9 +112,9 @@ int main() {
 
   // Stage 2
   r.add_proc(new MemoryReader("memread",
-                              {&rd_rdy, &s1_rd_mem_valid, &s1_rd_mem_reg,
+                              {&s1_rd_mem_valid, &s1_rd_mem_reg,
                                   &s1_rd_mem_adr, &s1_rd_mem_cnt},
-                              {&s2_rd_mem_rdy, &s2_rd_mem_valid,
+                              {&rd_rdy, &s2_rd_mem_valid,
                                   &s2_rd_mem_data, &s2_rd_mem_reg}, &mem));
   r.add_proc( new MemoryWriterFeeder("memwritefeed",
                                      {&s1_wr_mem_valid, &s1_wr_mem_cnt, &s1_wr_mem_adr,
@@ -121,11 +124,10 @@ int main() {
   r.add_proc(new ExecuteFeeder("exec",
                                {&s1_ex_valid, &s1_opcode, &s1_src_reg1,
                                    &s1_src_reg2, &s1_dst_reg, &s1_ex_cnt},
-                               {&s2_src_reg1,  &s2_src_reg2, &s2_opcode,
+                               {&s2_src_reg1, &s2_src_reg2, &s2_opcode,
                                    &s2_ex_rdy, &s2_dst_reg, &s2_dst_valid}));
 
   // Stage 3
-
   r.add_proc(new RegisterFile("regfile",
                               {&s2_rd_mem_valid, &s2_rd_mem_data, &s2_rd_mem_reg,
                                   &s2_wr_mem_valid_1s, &s2_wr_mem_reg, &s2_src_reg1,
@@ -135,12 +137,14 @@ int main() {
 
   // Stage 4
   r.add_proc(new MemoryWriter("memwrite",
-                             {&s2_wr_mem_valid_2s, &s2_wr_mem_adr, &s2_wr_mem_data},
+                             {&s2_wr_mem_valid_2s, &s2_wr_mem_adr, &s3_wr_mem_data},
                              {&s4_mem_feedback}, &mem));
   r.add_proc(new ALU("alu",
-                     {&s3_ex_reg1, &s3_ex_reg2, &s1_opcode},
+                     {&s3_ex_reg1, &s3_ex_reg2, &s2_opcode},
                      {&s4_alu_result}));
   r.start();
+
+  mem.dump(5);
 
   return 0;
 }

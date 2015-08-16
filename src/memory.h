@@ -18,6 +18,7 @@ private:
   char* data;
 
 public:
+  Memory(unsigned, const char*, int);
   Memory(unsigned size);
   ~Memory();
 
@@ -25,6 +26,7 @@ public:
   int fetch_read(unsigned valid_in, unsigned reqid, unsigned cnt);
   int enqueue_write(bool valid_in, unsigned cnt, unsigned adr, char data);
   int fetch_write(unsigned valid_in, unsigned reqid, unsigned cnt);
+  void dump(int);
 };
 
 #endif //BPU_MEMORY_H

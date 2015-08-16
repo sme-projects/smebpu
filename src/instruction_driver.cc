@@ -21,7 +21,7 @@ void Instructions::step() {
     // TODO: Make sure we increment the PC correctly
     Ucode cur = program[pc];
     Ucode next = program[++pc];
-    std::cout << "Opcode " << next.opcode << std::endl;
+    //std::cout << "Opcode " << cur.opcode << std::endl;
     if (next.opcode == FIN) {
       std::cout << "Finished" << std::endl;
       terminate = true;
@@ -53,7 +53,7 @@ void Instructions::step() {
     ex_cnt->write(cur.ex_cnt);
 
   } else {
-    std::cout << "We wait" << std::endl;
+    //std::cout << "We wait" << std::endl;
     wr_mem_valid->write(0);
     rd_mem_valid->write(0);
     ex_valid->write(0);

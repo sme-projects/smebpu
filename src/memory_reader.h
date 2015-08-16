@@ -6,7 +6,7 @@
 class MemoryReader: public SyncProcess {
 private:
 
-  Bus* rd_mem_rdy_in;
+  //Bus* rd_mem_rdy_in;
   Bus* rd_mem_valid_in;
   Bus* rd_mem_reg_in;
   Bus* rd_mem_adr_in;
@@ -35,7 +35,7 @@ public:
   MemoryReader(Name name, Busses ins, Busses outs, Memory* mem)
     :SyncProcess(name, ins, outs), mem{mem} {
 
-    Bus::assign(ins, {&rd_mem_rdy_in,  &rd_mem_valid_in,
+    Bus::assign(ins, {&rd_mem_valid_in,
           &rd_mem_reg_in, &rd_mem_adr_in, &rd_mem_cnt_in});
     Bus::assign(outs, {&rd_mem_rdy_out, &rd_mem_valid_out,
           &rd_mem_data_out, &rd_mem_reg_out});
