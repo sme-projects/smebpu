@@ -3,6 +3,7 @@
 #define SMEBPU_INSTRUCTION_DRIVER_H
 
 #include <libsme/sme.h>
+#include "constants.h"
 
 struct Ucode   {
   unsigned rd_wait;
@@ -63,9 +64,13 @@ private:
   int need_wr_wait = 0;
   int need_ex_wait = 0;
 
+  int completion_timer = 0;
+
+  Runner* env;
+
 public:
-  Instructions(Name name, Busses ins, Busses outs, Ucode* program)
-    :SyncProcess(name, ins, outs), program{program} {
+  Instructions(Name name, Busses ins, Busses outs, Ucode* program, Runner* env)
+    :SyncProcess(name, ins, outs), program{program}, env{env} {
     Bus::assign(ins, {&rd_wait,&wr_wait,&ex_wait});
     Bus::assign(outs,
                 {&wr_mem_valid,&wr_mem_cnt,&wr_mem_adr,&wr_mem_reg,

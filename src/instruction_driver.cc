@@ -3,6 +3,7 @@
 
 #include "alu.h"
 #include "instruction_driver.h"
+#include "constants.h"
 
 void Instructions::step() {
 
@@ -25,6 +26,7 @@ void Instructions::step() {
     if (next.opcode == FIN) {
       std::cout << "Finished" << std::endl;
       terminate = true;
+      completion_timer = COMPLETION_DELAY;
 
       need_rd_wait = 0;
       need_wr_wait = 0;
@@ -53,6 +55,11 @@ void Instructions::step() {
     ex_cnt->write(cur.ex_cnt);
 
   } else {
+    if(terminate) {
+      if(!(completion_timer-- >= 0)) {
+        env->halt();
+      }
+    }
     //std::cout << "We wait" << std::endl;
     wr_mem_valid->write(0);
     rd_mem_valid->write(0);

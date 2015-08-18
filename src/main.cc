@@ -24,7 +24,7 @@ int main() {
   };
 
   // Initial memory contents
-  const char contents[] = {1,1,1,1,1,0};
+  const char contents[] = {1,2,3,4,5,0};
   Memory mem = Memory(MEMORY_SIZE, contents, sizeof(contents));
   char* regstore = new char[REGISTER_FILE_SIZE];
   std::memset(regstore, 0, sizeof(char)*REGISTER_FILE_SIZE);
@@ -79,14 +79,14 @@ int main() {
   SME_MKBUS(s4_mem_feedback);
   SME_MKBUS(s4_alu_result);
 
-  auto r = ThreadedRun(50,1);
+  auto r = ThreadedRun(-1, 0);
   r.add_proc(new Instructions("instr",
                               {&rd_rdy,&wr_rdy,&s2_ex_rdy},
                               {&s1_wr_mem_valid,&s1_wr_mem_cnt,&s1_wr_mem_adr,&s1_wr_mem_reg,
                                   &s1_rd_mem_valid,&s1_rd_mem_cnt,&s1_rd_mem_adr,&s1_rd_mem_reg,
                                   &s1_ex_valid,&s1_opcode,&s1_src_reg1,&s1_src_reg2,
                                   &s1_dst_reg,&s1_ex_cnt},
-                                  program));
+                              program,&r));
 
   // Stage 2
   r.add_proc(new MemoryReader("memread",
@@ -121,6 +121,9 @@ int main() {
                      {&s3_ex_reg1, &s3_ex_reg2, &s2_opcode},
                      {&s4_alu_result}));
   r.start<BQueue>();
+  //r.start();
+
+  std::cout << "Execution halted after " << r.stepcount() << " cycles";
 
   mem.dump(5);
 
