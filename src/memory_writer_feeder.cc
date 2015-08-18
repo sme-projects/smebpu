@@ -21,7 +21,7 @@ void MemoryWriterFeeder::step() {
   mem_reg_out->write(reg);
   mem_adr_out->write(adr);
 
-  std::cout << "FEEDER " << cnt << " " << mem_writer_free->read() << std::endl;
+
   if (cnt != 0 && mem_writer_free->read() == 1) {
     std::cout << "valid" << std::endl;
     mem_valid_out->write(1);
@@ -30,7 +30,8 @@ void MemoryWriterFeeder::step() {
     reg++;
     adr++;
 
-    rdy |= cnt == 1;
+    //rdy |= cnt == 1;
+    rdy = cnt == 0;
   } else {
     // Send same value on busses destined for RegisterFile and MemoryWriter
     mem_valid_out->write(0);
