@@ -16,15 +16,20 @@ int main() {
 
   // Ucode for our program
   Ucode program[] = {
-    {0,0,0, 0,0,0,0, 1,5,0,0, 0,NOP,  0,0,0,0}, // Read 5 elements from adr=0 to reg=0
-    {1,0,0, 0,0,0,0, 0,0,0,0, 1,ADD,  0,0,0,5}, // Add from 0-5 into self
-    {0,0,1, 0,0,0,0, 0,0,0,0, 1,MUL,  0,0,0,5}, // Mul from 0-5 into self
-    {0,0,1, 1,5,0,0, 0,0,0,0, 0,NOP,  0,0,0,0}, // Write 5 elements from reg=0 to adr=0
-    {0,1,0, 0,0,0,0, 0,0,0,0, 0,FIN,  0,0,0,0}, // NOOP, wait for mem write
+    {0,0,0, 0,0,0,0, 1,5,0,0, 0,NOP, 0,0,0,0}, // Read 5 elements from adr=0 to reg=0
+    {1,0,0, 0,0,0,0, 0,0,0,0, 1,ADD, 0,0,0,5}, // Add from 0-5 into self
+    {0,0,1, 0,0,0,0, 0,0,0,0, 1,MUL, 0,0,0,5}, // Mul from 0-5 into self
+    {0,0,1, 1,5,0,0, 0,0,0,0, 0,NOP, 0,0,0,0}, // Write 5 elements from reg=0 to adr=0
+    {0,1,0, 1,5,5,0, 0,0,0,0, 0,NOP, 0,0,0,0}, // Write 5 elements from reg=0 to adr=5
+    {0,1,0, 0,0,0,0, 1,5,5,5, 0,NOP, 0,0,0,0}, // Read 5 elements from adr=5 to reg=5
+    {1,0,0, 0,0,0,0, 0,0,0,0, 1,DIV, 5,5,5,5}, // Div 5-10 by 5-10 into 5-10
+    {0,0,1, 1,5,5,5, 0,0,0,0, 0,NOP, 0,0,0,0}, // Write 5 elements from reg=0 to adr=5
+    {0,1,0, 0,0,0,0, 0,0,0,0, 0,FIN, 0,0,0,0}, // NOOP, wait for mem write
   };
 
   // Initial memory contents
-  const char contents[] = {1,2,3,4,5,0};
+  //const char contents[] = {1,2,3,4,5};
+  const char contents[] = {1,1,1,1,1};
   Memory mem = Memory(MEMORY_SIZE, contents, sizeof(contents));
   char* regstore = new char[REGISTER_FILE_SIZE];
   std::memset(regstore, 0, sizeof(char)*REGISTER_FILE_SIZE);
@@ -79,7 +84,8 @@ int main() {
   SME_MKBUS(s4_mem_feedback);
   SME_MKBUS(s4_alu_result);
 
-  auto r = ThreadedRun(-1, 0);
+  // -1 iterations = infinity (until halted)
+  auto r = ThreadedRun(-1, 1);
   r.add_proc(new Instructions("instr",
                               {&rd_rdy,&wr_rdy,&s2_ex_rdy},
                               {&s1_wr_mem_valid,&s1_wr_mem_cnt,&s1_wr_mem_adr,&s1_wr_mem_reg,
@@ -125,7 +131,7 @@ int main() {
 
   std::cout << "Execution halted after " << r.stepcount() << " cycles";
 
-  mem.dump(5);
+  mem.dump(10);
 
   return 0;
 }
