@@ -4,6 +4,9 @@
 #include "memory_writer_feeder.h"
 
 void MemoryWriterFeeder::step() {
+  rdy = 0;
+
+  std::cout << "FEEDER " << cnt << " " << mem_valid_in->read() << std::endl;
   if (cnt == 0 && mem_valid_in->read() == 1) {
 
     cnt = mem_cnt_in->read();

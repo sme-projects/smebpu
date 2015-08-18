@@ -22,8 +22,7 @@ private:
   unsigned reg = 0;
   unsigned adr = 0;
 
-  bool rdy = false;
-
+  int rdy = 0;
 public:
   MemoryWriterFeeder(Name name, Busses ins, Busses outs)
     :SyncProcess(name, ins, outs) {

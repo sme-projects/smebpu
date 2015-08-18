@@ -5,7 +5,7 @@
 #include "memory_reader.h"
 
 void MemoryReader::step() {
-
+  rdy = 0;
   int ret;
 
   if (pending_read) {
