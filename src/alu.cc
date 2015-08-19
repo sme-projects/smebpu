@@ -23,6 +23,7 @@ void ALU::step() {
   case DIV:
     result->write(op1->read() / op2->read());
     break;
+  case FIN:
   case NOP:
     break;
   }
